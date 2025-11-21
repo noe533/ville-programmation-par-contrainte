@@ -1,0 +1,90 @@
+int: NB_TYPES = 8;
+set of int: TYPES = 0..NB_TYPES-1;
+
+array[TYPES] of int: nb_par_type =
+  array1d(TYPES, [
+     40, % 0 maison 
+     0, % 1 commerce
+     0, % 2 école
+     0, % 3 église
+     0, % 4 parc
+     0, % 5 hôpital
+     0, % 6 mairie 
+     0  % 7 usine
+  ]);
+
+int: NB_BUILDINGS = sum(t in TYPES)(nb_par_type[t]);
+
+% ----------------------------------------------------------------------
+% Type de chaque bâtiment 
+% ----------------------------------------------------------------------
+array[1..NB_BUILDINGS] of int: typeBat =
+[
+  t
+  | t in TYPES,
+    k in 1..nb_par_type[t]
+];
+
+% ----------------------------------------------------------------------
+% Rayon Manhattan
+% -------------------------------------------------------A---------------
+array[TYPES] of int: rayon_type =
+  array1d(TYPES, [
+    3, % 0 maison
+    1, % 1 commerce
+    2, % 2 école 
+    2, % 3 église
+    2, % 4 parc
+    3, % 5 hôpital
+    3, % 6 mairie
+    3  % 7 usine 
+  ]);
+
+% Rayon de chaque bâtiment
+array[1..NB_BUILDINGS] of int: rayon =
+[
+  rayon_type[typeBat[b]]
+  | b in 1..NB_BUILDINGS
+];
+
+% ----------------------------------------------------------------------
+% Système d'énergie
+%   demand_type[t]  = consommation d'énergie d'un bâtiment de type t
+%   capacity_type[t]= production d'énergie d'un bâtiment de type t
+% ----------------------------------------------------------------------
+array[TYPES] of int: demand_type =
+  array1d(TYPES, [
+    2, % 0 maison          
+    3, % 1 commerce        
+    3, % 2 école
+    2, % 3 église
+    1, % 4 parc            
+    4, % 5 hôpital         
+    3, % 6 mairie 
+    0  % 7 usine   
+  ]);
+
+array[TYPES] of int: capacity_type =
+  array1d(TYPES, [
+    0,  % 0 maison
+    0,  % 1 commerce
+    0,  % 2 école
+    0,  % 3 église
+    0,  % 4 parc
+    0,  % 5 hôpital
+    0,  % 6 mairie
+    10  % 7 usine source d'énergie
+  ]);
+
+% Demande / capacité par bâtiment
+array[1..NB_BUILDINGS] of int: demand =
+[
+  demand_type[typeBat[b]]
+  | b in 1..NB_BUILDINGS
+];
+
+array[1..NB_BUILDINGS] of int: capacity =
+[
+  capacity_type[typeBat[b]]
+  | b in 1..NB_BUILDINGS
+];
