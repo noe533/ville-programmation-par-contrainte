@@ -15,7 +15,7 @@ H, W = data.shape
 # 2) Discrétiser en types de terrain
 # 0 = eau, 1 = plaine, 2 = forêt, 3 = montagne
 terrain = np.zeros_like(data, dtype=int)
-q1, q2, q3 = np.quantile(data, [0.1, 0.55, 0.9])
+q1, q2, q3 = np.quantile(data, [0.15, 0.5, 0.6])
 
 terrain[data < q1] = 0                          # eau
 terrain[(data >= q1) & (data < q2)] = 1         # plaine
