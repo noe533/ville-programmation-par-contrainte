@@ -1,0 +1,107 @@
+{
+  "Building Sky_big_color01": {
+    "size_x": 14,
+    "size_z": 12,
+    "max_dim": 14
+  },
+  "Building Sky_small_color01": {
+    "size_x": 13,
+    "size_z": 13,
+    "max_dim": 13
+  },
+  "Building_House_01_color01": {
+    "size_x": 18,
+    "size_z": 13,
+    "max_dim": 18
+  },
+  "Building_House_02_color01": {
+    "size_x": 18,
+    "size_z": 13,
+    "max_dim": 18
+  },
+  "Building_Residential_color01": {
+    "size_x": 16,
+    "size_z": 13,
+    "max_dim": 16
+  },
+  "Building_House_03_color01": {
+    "size_x": 17,
+    "size_z": 14,
+    "max_dim": 17
+  },
+  "Building_Factory": {
+    "size_x": 16,
+    "size_z": 28,
+    "max_dim": 28
+  },
+  "Props_Windmill": {
+    "size_x": 6,
+    "size_z": 2,
+    "max_dim": 6
+  },
+  "Building_Auto Service": {
+    "size_x": 18,
+    "size_z": 8,
+    "max_dim": 18
+  },
+  "Building_Bakery": {
+    "size_x": 14,
+    "size_z": 11,
+    "max_dim": 14
+  },
+  "Building_Bar": {
+    "size_x": 7,
+    "size_z": 7,
+    "max_dim": 7
+  },
+  "Building_Books Shop": {
+    "size_x": 12,
+    "size_z": 12,
+    "max_dim": 12
+  },
+  "Building_Chicken Shop": {
+    "size_x": 11,
+    "size_z": 10,
+    "max_dim": 11
+  },
+  "Building_Clothing": {
+    "size_x": 12,
+    "size_z": 12,
+    "max_dim": 12
+  },
+  "Building_Coffee Shop": {
+    "size_x": 19,
+    "size_z": 12,
+    "max_dim": 19
+  },
+  "Building_Drug Store": {
+    "size_x": 11,
+    "size_z": 11,
+    "max_dim": 11
+  },
+  "Building_Fast Food": {
+    "size_x": 11,
+    "size_z": 10,
+    "max_dim": 11
+  },
+  "Building_Fruits  Shop": {
+    "size_x": 12,
+    "size_z": 12,
+    "max_dim": 12
+  },
+  "Building_Gas Station": {
+    "size_x": 13,
+    "size_z": 26,
+    "max_dim": 26
+  },
+  "Building_Gift Shop": {
+    "size_x": 11,
+    "size_z": 11,
+    "max_dim": 11
+  },
+  "Building_Super Market": {
+    "size_x": 24,
+    "size_z": 13,
+    "max_dim": 24
+  }
+}
