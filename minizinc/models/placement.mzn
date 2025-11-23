@@ -36,6 +36,7 @@ array[1..NB_BUILDINGS] of var 1..W: x;
 array[1..NB_BUILDINGS] of var 1..H: y;
 
 
+
 % Non chevauchement des batiments
 constraint diffn(x, y, sizeX, sizeY);
 
@@ -46,10 +47,42 @@ constraint forall(b in BATIMENTS)(
 );
 
 
-constraint forall(b in BATIMENTS)(allowedTerrain[category_type[typeBat[b]], terrain[y[b], x[b]]] == 1);
-constraint forall(b in BATIMENTS)(allowedTerrain[category_type[typeBat[b]], terrain[y[b] + sizeY[b], x[b]]] == 1);
-constraint forall(b in BATIMENTS)(allowedTerrain[category_type[typeBat[b]], terrain[y[b], x[b] + sizeX[b]]] == 1);
-constraint forall(b in BATIMENTS)(allowedTerrain[category_type[typeBat[b]], terrain[y[b] + sizeY[b], x[b] + sizeX[b]]] == 1);
+constraint forall(b in BATIMENTS)(
+  %4 coins
+  allowedTerrain[category_type[typeBat[b]], terrain[y[b],x[b]]] == 1 /\
+  allowedTerrain[category_type[typeBat[b]], terrain[y[b],x[b] + sizeX[b] - 1]] == 1 /\
+  allowedTerrain[category_type[typeBat[b]], terrain[y[b] + sizeY[b] - 1,x[b]]] == 1 /\
+  allowedTerrain[category_type[typeBat[b]], terrain[y[b] + sizeY[b] - 1,x[b] + sizeX[b] - 1]] == 1 /\
+  %milieu
+  allowedTerrain[category_type[typeBat[b]], terrain[y[b] + sizeY[b] div 2,x[b] + sizeX[b] div 2]] == 1
+);
+
+
+constraint forall(b in BATIMENTS)(
+  isRoad[y[b],x[b]] = 0 /\
+  isRoad[y[b],x[b] + sizeX[b] - 1] = 0 /\
+  isRoad[y[b] + sizeY[b] - 1,x[b]] = 0 /\
+  isRoad[y[b] + sizeY[b] - 1,x[b] + sizeX[b] - 1] = 0 /\
+  %milieu
+  isRoad[y[b] + sizeY[b] div 2,x[b] + sizeX[b] div 2] = 0
+);
+
+% bâtiment doit être collé à au moins une route 
+constraint forall(b in BATIMENTS)(
+   % gauche
+  (x[b] > 1 /\ isRoad[ y[b] + sizeY[b] div 2, x[b] - 1 ] = 1)
+  \/
+  %  droit 
+  (x[b] + sizeX[b] - 1 < W /\ isRoad[ y[b] + sizeY[b] div 2, x[b] + sizeX[b] ] = 1)
+  \/
+  %  bas
+  (y[b] > 1 /\ isRoad[ y[b] - 1, x[b] + sizeX[b] div 2 ] = 1)
+  \/
+  %  haut
+  ( y[b] + sizeY[b] - 1 < H /\ isRoad[ y[b] + sizeY[b], x[b] + sizeX[b] div 2 ] = 1));
+  
+  
+  
 % Chaque case occupée par le bâtiment doit être sur terrain autorisé
 %constraint forall(b in BATIMENTS)(
 %  forall(dx in 0..sizeX[b]-1, dy in 0..sizeY[b]-1)(
