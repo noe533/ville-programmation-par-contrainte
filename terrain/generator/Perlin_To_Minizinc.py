@@ -6,17 +6,19 @@ from collections import deque
 
 
 
-BLOCK_SPACING = 60         # distance (px) entre rues secondaires majeures
+BLOCK_SPACING = 70         # distance (px) entre rues secondaires majeures
 BUILDABLE_RADIUS = 15       # tolérance (px) pour considérer qu’une zone est assez large/plate
-CITY_EXPAND_RADIUS = 6     # expansion (px) des zones larges avant de placer un quartier
-CITY_MIN_SIZE = 200        # nombre de pixels min pour transformer une composante en quartier
+CITY_EXPAND_RADIUS = 3     # expansion (px) des zones larges avant de placer un quartier
+CITY_MIN_SIZE = 400        # nombre de pixels min pour transformer une composante en quartier
 COAST_TOLERANCE = 2        # épaisseur (px) autorisant une route collée à l’eau/relief
 COAST_COST = 30.0          # coût des cellules côtières
 INF = 1e9
 ROAD = 1
-LOCAL_STREET_SPACING = 44  # distance (px) des rues internes pour garder de la place aux bâtiments
-LOCAL_INSET = 6            # marge (px) pour ne pas coller ces rues internes aux bords du quartier
-ROAD_THICKEN = 2           # rayon de dilation pour épaissir les routes (0 pour garder fin)
+LOCAL_STREET_SPACING = 70  # distance (px) des rues internes pour garder de la place aux bâtiments
+LOCAL_INSET = 40           # marge (px) pour ne pas coller ces rues internes aux bords du quartier
+ROAD_THICKEN = 3          # rayon de dilation pour épaissir les routes (0 pour garder fin)
+MIN_STRAIGHT_AFTER_TURN = 12   # nb min de cases droites avant d'autoriser un nouveau virage
+MAX_TURNS = 5                 # nombre max de virages autorisés par trajet
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--input", "-i", required=True)
@@ -27,7 +29,7 @@ args = parser.parse_args()
 data = np.array(Image.open(args.input).convert("L"))
 H, W = data.shape
 terrain = np.zeros_like(data, dtype=int)
-q1, q2, q3 = np.quantile(data, [0.15, 0.5, 0.6])
+q1, q2, q3 = np.quantile(data, [0.14, 0.5, 0.75])
 terrain[data < q1] = 0
 terrain[(data >= q1) & (data < q2)] = 1
 terrain[(data >= q2) & (data < q3)] = 2
@@ -90,36 +92,52 @@ def build_cost(terrain, passable, wide_mask):
     return cost, roadable
 
 
-def astar(cost, start, goal):
+def astar(cost, start, goal, min_straight=0, max_turns=None):
     if cost[start] >= INF or cost[goal] >= INF:
         return []
     sy, sx = start
     gy, gx = goal
+    start_state = (sy, sx, 0, 0, 0, 0)  # (y, x, dy, dx, len_straight, turns)
     open_set = []
-    gscore = {(sy, sx): 0.0}
+    gscore = {start_state: 0.0}
 
     def heuristic(y, x):
         return abs(y - gy) + abs(x - gx)
 
-    heapq.heappush(open_set, (heuristic(sy, sx), sy, sx))
+    heapq.heappush(open_set, (heuristic(sy, sx), sy, sx, 0, 0, 0, 0))
     came_from = {}
 
     while open_set:
-        _, y, x = heapq.heappop(open_set)
+        _, y, x, dy, dx, straight, turns = heapq.heappop(open_set)
+        state = (y, x, dy, dx, straight, turns)
+        if gscore.get(state, INF) == INF:
+            continue
         if (y, x) == (gy, gx):
             path = [(y, x)]
-            while (y, x) in came_from:
-                y, x = came_from[(y, x)]
-                path.append((y, x))
+            while state in came_from:
+                state = came_from[state]
+                path.append((state[0], state[1]))
             return list(reversed(path))
         for ny, nx in neighbors(y, x):
             if cost[ny, nx] >= INF:
                 continue
-            g_new = gscore[(y, x)] + cost[ny, nx]
-            if (ny, nx) not in gscore or g_new < gscore[(ny, nx)]:
-                gscore[(ny, nx)] = g_new
-                came_from[(ny, nx)] = (y, x)
-                heapq.heappush(open_set, (g_new + heuristic(ny, nx), ny, nx))
+            ndy, ndx = ny - y, nx - x
+            turned = not (dy == 0 and dx == 0) and (ndy != dy or ndx != dx)
+            if turned and straight < min_straight:
+                continue
+            if turned and max_turns is not None and turns + 1 > max_turns:
+                continue
+            step_cost = cost[ny, nx]
+            max_straight = min_straight if min_straight > 0 else 3
+            new_straight = straight + 1 if not turned else 1
+            if new_straight > max_straight:
+                new_straight = max_straight
+            g_new = gscore[state] + step_cost
+            n_state = (ny, nx, ndy, ndx, new_straight, turns + (1 if turned else 0))
+            if g_new < gscore.get(n_state, INF):
+                gscore[n_state] = g_new
+                came_from[n_state] = state
+                heapq.heappush(open_set, (g_new + heuristic(ny, nx), ny, nx, ndy, ndx, new_straight, turns + (1 if turned else 0)))
     return []
 
 def draw_grid(road, mask, y0, y1, x0, x1, spacing):
@@ -206,7 +224,13 @@ def connect_mst(road, centers, cost):
                 if best is None or d < best[0]:
                     best = (d, i, j)
         _, i, j = best
-        for y, x in astar(cost, centers[i], centers[j]):
+        for y, x in astar(
+            cost,
+            centers[i],
+            centers[j],
+            min_straight=MIN_STRAIGHT_AFTER_TURN,
+            max_turns=MAX_TURNS,
+        ):
             road[y, x] = ROAD
         connected.add(j)
 
@@ -217,7 +241,13 @@ def connect_to_network(road, centers, seeds, cost):
         if any(c == s for s in network):
             continue
         nearest = min(network, key=lambda s: abs(c[0] - s[0]) + abs(c[1] - s[1]))
-        for y, x in astar(cost, c, nearest):
+        for y, x in astar(
+            cost,
+            c,
+            nearest,
+            min_straight=MIN_STRAIGHT_AFTER_TURN,
+            max_turns=MAX_TURNS,
+        ):
             road[y, x] = ROAD
         network.append(c)
 
@@ -267,7 +297,13 @@ main_road = []
 lb = best_edge_candidate(cost, "left", margin=5)
 rb = best_edge_candidate(cost, "right", margin=5)
 if lb and rb:
-    main_road = astar(cost, (lb[1], lb[2]), (rb[1], rb[2]))
+    main_road = astar(
+        cost,
+        (lb[1], lb[2]),
+        (rb[1], rb[2]),
+        min_straight=MIN_STRAIGHT_AFTER_TURN,
+        max_turns=MAX_TURNS,
+    )
     for y, x in main_road:
         road[y, x] = ROAD
 
