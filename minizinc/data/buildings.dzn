@@ -98,31 +98,31 @@ array[TYPES] of int: sizeY_type =
 array[TYPES] of int: nb_par_type =
   array1d(TYPES, [
     % Maisons
-    4, % 0  Sky_big
-    2, % 1  Sky_small
-    2, % 2  House_01
-    2, % 3  House_02
-    3, % 4  Residential
-    5, % 5  House_03
+    5, % 0  Sky_big
+    0, % 1  Sky_small
+    0, % 2  House_01
+    0, % 3  House_02
+    0, % 4  Residential
+    0, % 5  House_03
 
     % Énergie
-    2, % 6  Factory
-    1, % 7  Windmill
+    3, % 6  Factory
+    0, % 7  Windmill
 
     % Commerce
-    2, % 8  Auto Service
-    5, % 9  Bakery
-    5, % 10 Bar
-    1, % 11 Books Shop
-    2, % 12 Chicken Shop
-    2, % 13 Clothing
-    2, % 14 Coffee Shop
-    2, % 15 Drug Store
-    2, % 16 Fast Food
-    1, % 17 Fruits Shop
-    1, % 18 Gas Station
-    2, % 19 Gift Shop
-    2  % 20 Super Market
+    0, % 8  Auto Service
+    0, % 9  Bakery
+    0, % 10 Bar
+    0, % 11 Books Shop
+    0, % 12 Chicken Shop
+    0, % 13 Clothing
+    0, % 14 Coffee Shop
+    0, % 15 Drug Store
+    0, % 16 Fast Food
+    0, % 17 Fruits Shop
+    0, % 18 Gas Station
+    0, % 19 Gift Shop
+    0  % 20 Super Market
   ]);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

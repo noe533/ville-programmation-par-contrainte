@@ -25,6 +25,7 @@ NAME := $(basename $(notdir $(RAW_IMAGE)))
 
 TERRAIN=terrain/data/$(NAME).dzn
 SOLUTION=minizinc/solutions/$(NAME).dzn
+AFFICHAGE=affichage2D.py
 OUTPUT=visualisation/output/solution.png
 JSON_OUTPUT=visualisation/output/solution.json
 
@@ -48,12 +49,14 @@ $(TERRAIN): $(PROCESSED_IMAGE)
 $(SOLUTION): $(TERRAIN) $(BUILDINGS) $(MODEL)
 	$(MINIZINC) --time-limit 60000 $(MODEL) > $(SOLUTION)
 
+#$(OUTPUT): $(SOLUTION)
+#	mkdir -p $(dir $@)
+#	$(PYTHON) visualisation/python/render_solution.py \
+#	    --input $(SOLUTION) \
+#	    --output $(OUTPUT) \
+#	    --json-output $(JSON_OUTPUT)
 $(OUTPUT): $(SOLUTION)
-	mkdir -p $(dir $@)
-	$(PYTHON) visualisation/python/render_solution.py \
-	    --input $(SOLUTION) \
-	    --output $(OUTPUT) \
-	    --json-output $(JSON_OUTPUT)
+	$(PYTHON) $(AFFICHAGE)
 
 # Nettoyage des fichiers générés
 clean:

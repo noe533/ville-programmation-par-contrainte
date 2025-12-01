@@ -81,33 +81,8 @@ constraint forall(b in BATIMENTS)(
   %  haut
   ( y[b] + sizeY[b] - 1 < H /\ isRoad[ y[b] + sizeY[b], x[b] + sizeX[b] div 2 ] = 1));
   
-  
-  
-% Chaque case occupée par le bâtiment doit être sur terrain autorisé
-%constraint forall(b in BATIMENTS)(
-%  forall(dx in 0..sizeX[b]-1, dy in 0..sizeY[b]-1)(
-%    allowedTerrain[category_type[typeBat[b]], terrain[y[b]+dy, x[b]+dx]] == 1
-%  )
-%);
 
-%% Variable à minimiser : rayon englobant de la ville
-%% Bounding box de la ville
-%var int: min_x = min(b in BATIMENTS)(x[b]);
-%var int: min_y = min(b in BATIMENTS)(y[b]);
-%var int: max_x = max(b in BATIMENTS)(x[b] + rayon[b]);
-%var int: max_y = max(b in BATIMENTS)(y[b] + rayon[b]);
-%
-%% Dimensions du rectangle englobant
-%var int: largeur_ville = max_x - min_x;
-%var int: hauteur_ville = max_y - min_y;
-%
-%/***********************
-% * Stratégie de résolution
-% ***********************/
-%
-%solve minimize largeur_ville + hauteur_ville;
-%
-solve satisfy;
+solve minimize max(x) - min(x) + max(x) - min(x);
 /***********************
  * Sortie 
  ***********************/
