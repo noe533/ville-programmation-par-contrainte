@@ -26,9 +26,8 @@ array[CATS, TERRAINS] of int: allowedTerrain =
   ]);
 
 
-/***********************
- * Variables décisionnelles
- ***********************/
+% Variables décisionnelles
+
 
 % Position de chaque bâtiment (coin en bas à gauche je crois)
 array[1..NB_BUILDINGS] of var 1..W: x;
@@ -45,55 +44,61 @@ constraint forall(b in BATIMENTS)(
     y[b] + sizeY[b] -1 <= H
 );
 
-% Positions admissibles calculées à la volée
-array[TYPES, 1..W, 1..H] of bool: allowedStart =
-  array3d(TYPES, 1..W, 1..H, [
-    let {
-      int: sx = sizeX_type[t],
-      int: sy = sizeY_type[t]
-    } in
-    x0 + sx - 1 <= W /\
-    y0 + sy - 1 <= H /\
-    allowedTerrain[category_type[t], terrain[y0, x0]] == 1 /\
-    allowedTerrain[category_type[t], terrain[y0, x0 + sx - 1]] == 1 /\
-    allowedTerrain[category_type[t], terrain[y0 + sy - 1, x0]] == 1 /\
-    allowedTerrain[category_type[t], terrain[y0 + sy - 1, x0 + sx - 1]] == 1 /\
-    allowedTerrain[category_type[t], terrain[y0 + sy div 2, x0 + sx div 2]] == 1 /\
-    isRoad[y0, x0] = 0 /\
-    isRoad[y0, x0 + sx - 1] = 0 /\
-    isRoad[y0 + sy - 1, x0] = 0 /\
-    isRoad[y0 + sy - 1, x0 + sx - 1] = 0 /\
-    isRoad[y0 + sy div 2, x0 + sx div 2] = 0
-    | t in TYPES, x0 in 1..W, y0 in 1..H
-  ]);
 
 constraint forall(b in BATIMENTS)(
-  allowedStart[typeBat[b], x[b], y[b]]
+  let {
+    var int: cx = x[b] + sizeX[b] div 2;
+    var int: cy = y[b] + sizeY[b] div 2;
+    var int: xMax = x[b] + sizeX[b] - 1;
+    var int: yMax = y[b] + sizeY[b] - 1;
+    % Points à mi-distance entre le centre et chaque coin
+    var int: midLeft = (x[b] + cx) div 2;
+    var int: midRight = (xMax + cx) div 2;
+    var int: midBottom = (y[b] + cy) div 2;
+    var int: midTop = (yMax + cy) div 2
+  } in
+    % 4 coins
+    allowedTerrain[category_type[typeBat[b]], terrain[y[b], x[b]]] == 1 /\
+    allowedTerrain[category_type[typeBat[b]], terrain[y[b], xMax]] == 1 /\
+    allowedTerrain[category_type[typeBat[b]], terrain[yMax, x[b]]] == 1 /\
+    allowedTerrain[category_type[typeBat[b]], terrain[yMax, xMax]] == 1 /\
+
+    % milieu
+    allowedTerrain[category_type[typeBat[b]], terrain[cy, cx]] == 1 /\
+
+    % points intermédiaires coin-centre
+    allowedTerrain[category_type[typeBat[b]], terrain[midBottom, midLeft]] == 1 /\
+    allowedTerrain[category_type[typeBat[b]], terrain[midBottom, midRight]] == 1 /\
+    allowedTerrain[category_type[typeBat[b]], terrain[midTop, midLeft]] == 1 /\
+    allowedTerrain[category_type[typeBat[b]], terrain[midTop, midRight]] == 1
 );
 
 
 constraint forall(b in BATIMENTS)(
-  %4 coins
-  allowedTerrain[category_type[typeBat[b]], terrain[y[b],x[b]]] == 1 /\
-  allowedTerrain[category_type[typeBat[b]], terrain[y[b],x[b] + sizeX[b] - 1]] == 1 /\
-  allowedTerrain[category_type[typeBat[b]], terrain[y[b] + sizeY[b] - 1,x[b]]] == 1 /\
-  allowedTerrain[category_type[typeBat[b]], terrain[y[b] + sizeY[b] - 1,x[b] + sizeX[b] - 1]] == 1 /\
+  let {
+    var int: cx = x[b] + sizeX[b] div 2;
+    var int: cy = y[b] + sizeY[b] div 2;
+    var int: xMax = x[b] + sizeX[b] - 1;
+    var int: yMax = y[b] + sizeY[b] - 1;
+    var int: midLeft = (x[b] + cx) div 2;
+    var int: midRight = (xMax + cx) div 2;
+    var int: midBottom = (y[b] + cy) div 2;
+    var int: midTop = (yMax + cy) div 2
+  } in
+    % 4 coins
+    isRoad[y[b], x[b]] = 0 /\
+    isRoad[y[b], xMax] = 0 /\
+    isRoad[yMax, x[b]] = 0 /\
+    isRoad[yMax, xMax] = 0 /\
 
-  %milieu
-  allowedTerrain[category_type[typeBat[b]], terrain[y[b] + sizeY[b] div 2,x[b] + sizeX[b] div 2]] == 1 
-  
-);
+    % milieu
+    isRoad[cy, cx] = 0 /\
 
-
-constraint forall(b in BATIMENTS)(
-  % 4 coins
-  isRoad[y[b], x[b]] = 0 /\
-  isRoad[y[b], x[b] + sizeX[b] - 1] = 0 /\
-  isRoad[y[b] + sizeY[b] - 1, x[b]] = 0 /\
-  isRoad[y[b] + sizeY[b] - 1, x[b] + sizeX[b] - 1] = 0 /\
-
-  % milieu
-  isRoad[y[b] + sizeY[b] div 2, x[b] + sizeX[b] div 2] = 0 
+    % points intermédiaires coin-centre
+    isRoad[midBottom, midLeft] = 0 /\
+    isRoad[midBottom, midRight] = 0 /\
+    isRoad[midTop, midLeft] = 0 /\
+    isRoad[midTop, midRight] = 0
 );
 
 % bâtiment doit être collé à au moins une route 
@@ -111,9 +116,7 @@ constraint forall(b in BATIMENTS)(
   ( y[b] + sizeY[b] - 1 < H /\ isRoad[ y[b] + sizeY[b], x[b] + sizeX[b] div 2 ] = 1));
   
 solve satisfy;
-/***********************
- * Sortie 
- ***********************/
+%sortie 
 
 output [
   "objective=" ++ "\n"

@@ -6,26 +6,25 @@ from collections import deque
 
 
 
-BLOCK_SPACING = 70         # distance (px) entre rues secondaires majeures
-BUILDABLE_RADIUS = 15       # tolérance (px) pour considérer qu’une zone est assez large/plate
-CITY_EXPAND_RADIUS = 3     # expansion (px) des zones larges avant de placer un quartier
-CITY_MIN_SIZE = 400        # nombre de pixels min pour transformer une composante en quartier
-COAST_TOLERANCE = 2        # épaisseur (px) autorisant une route collée à l’eau/relief
-COAST_COST = 30.0          # coût des cellules côtières
+BLOCK_SPACING = 70
+BUILDABLE_RADIUS = 15
+CITY_EXPAND_RADIUS = 3
+CITY_MIN_SIZE = 400
+COAST_TOLERANCE = 2
+COAST_COST = 30.0
 INF = 1e9
 ROAD = 1
-LOCAL_STREET_SPACING = 70  # distance (px) des rues internes pour garder de la place aux bâtiments
-LOCAL_INSET = 40           # marge (px) pour ne pas coller ces rues internes aux bords du quartier
-ROAD_THICKEN = 3          # rayon de dilation pour épaissir les routes (0 pour garder fin)
-MIN_STRAIGHT_AFTER_TURN = 12   # nb min de cases droites avant d'autoriser un nouveau virage
-MAX_TURNS = 5                 # nombre max de virages autorisés par trajet
+LOCAL_STREET_SPACING = 70
+LOCAL_INSET = 40
+ROAD_THICKEN = 3
+MIN_STRAIGHT_AFTER_TURN = 12
+MAX_TURNS = 5
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--input", "-i", required=True)
 parser.add_argument("--output", "-o", required=True)
 args = parser.parse_args()
 
-# Lecture et discretisation
 data = np.array(Image.open(args.input).convert("L"))
 H, W = data.shape
 terrain = np.zeros_like(data, dtype=int)
@@ -97,7 +96,7 @@ def astar(cost, start, goal, min_straight=0, max_turns=None):
         return []
     sy, sx = start
     gy, gx = goal
-    start_state = (sy, sx, 0, 0, 0, 0)  # (y, x, dy, dx, len_straight, turns)
+    start_state = (sy, sx, 0, 0, 0, 0)
     open_set = []
     gscore = {start_state: 0.0}
 

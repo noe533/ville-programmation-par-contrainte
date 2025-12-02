@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import argparse
 import json
 from PIL import Image, ImageDraw
@@ -14,7 +13,7 @@ def parse_solution(solution_path):
             if not line:
                 continue
 
-            # séparateur entre solutions / fin
+            
             if line.startswith("----------") or line.startswith("====="):
                 if current_block:
                     last_block = current_block
@@ -24,7 +23,7 @@ def parse_solution(solution_path):
             if not line.startswith("b="):
                 continue
 
-            parts = line.split()  # ["b=1","type=0","x=27","y=16"]
+            parts = line.split()
             if len(parts) < 4:
                 continue
 
@@ -41,13 +40,11 @@ def parse_solution(solution_path):
 
     return last_block
 
-# ---------- export JSON pour Houdini ----------
+
 
 def save_json(buildings, json_path):
     data = []
     for i, (x, y, b_type) in enumerate(buildings):
-        # x, y fournis par MiniZinc correspondent au coin haut-gauche du bâtiment.
-        # On convertit en coordonnées de centre de bâtiment (en indices de grille).
         w = sizeX[b_type]
         h = sizeY[b_type]
 
@@ -65,7 +62,6 @@ def save_json(buildings, json_path):
         json.dump(data, f, indent=2)
 
 
-# ---------- rendu image  ----------
 
 def draw_solution(buildings, output_path,
                   terrain_image="images/processed/terrain_colored.png",
@@ -80,17 +76,17 @@ def draw_solution(buildings, output_path,
     draw = ImageDraw.Draw(img)
 
     type_color = {
-        0: (255, 0, 0),      # catégorie 0 (ex: maison sky_big)
-        1: (255, 255, 255),  # catégorie 1
-        2: (0, 0, 0),        # etc.
+        0: (255, 0, 0),
+        1: (255, 255, 255),
+        2: (0, 0, 0),
     }
 
     for (x, y, b_type) in buildings:
-        # coordonnées sur l'image upscalée
+        
         px = int((x - 1) * scale)
         py = int((y - 1) * scale)
 
-        # petit "rayon" visuel fixe juste pour voir un carré
+        
         r = max(1, int(2 * scale))
 
         color = type_color.get(b_type, (255, 0, 255))

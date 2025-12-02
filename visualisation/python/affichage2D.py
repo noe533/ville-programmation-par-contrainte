@@ -7,9 +7,8 @@ import random
 def random_color():
     return (random.random(), random.random(), random.random())
 
-# ===============================================================
-# 1) Lecteur du fichier des bâtiments
-# ===============================================================
+
+
 
 def read_buildings(filename):
     buildings = []
@@ -18,7 +17,7 @@ def read_buildings(filename):
             line = line.strip()
             if not line or line.startswith("-"):
                 continue
-            # ignore lignes de statut MiniZinc (=====UNKNOWN=====, etc.)
+            
             if not line.startswith("b="):
                 continue
 
@@ -33,27 +32,15 @@ def read_buildings(filename):
     if not buildings:
         raise ValueError(
             f"Aucun bâtiment trouvé dans {filename}. "
-            "Le solveur a probablement retourné UNKNOWN/UNSAT."
+            "Peut-être UNSAT."
         )
     return buildings
 
 
-# ===============================================================
-# 2) Lecteur d’un fichier .dzn du terrain + auto-orientation
-# ===============================================================
 
 def read_dzn_terrain(filename, buildings=None, verbose=False):
-    """
-    Lit le .dzn et retourne W, H, terrain, isRoad.
-    Si `buildings` (liste de tuples (bid,type,x,y)) est fourni, on choisit l'orientation
-    (deux manières possibles d'interpréter l'array2d linéaire) qui minimise les conflits
-    bâtiments <-> routes. Sinon on renvoie l'orientation A par défaut mais affiche
-    des informations utiles si verbose=True.
-    """
     with open(filename, "r") as f:
         data = f.read()
-
-    # extrait W et H
     mW = re.search(r"int:\s*W\s*=\s*(\d+)", data)
     mH = re.search(r"int:\s*H\s*=\s*(\d+)", data)
     if not mW or not mH:
@@ -75,9 +62,6 @@ def read_dzn_terrain(filename, buildings=None, verbose=False):
     terrain_vals = extract_array("terrain")
     isroad_vals  = extract_array("isRoad")
 
-    # Deux interprétations possibles (produisant des tableaux shape (H,W))
-    # A) reshape((W,H)).T  => équivalent à transposer la notion MiniZinc(x,y)
-    # B) reshape((H,W))    => si l'ordre linéaire était déjà par lignes
     tA = terrain_vals.reshape((W, H)).T.copy()
     tB = terrain_vals.reshape((H, W)).copy()
     rA = isroad_vals.reshape((W, H)).T.copy()
@@ -89,16 +73,13 @@ def read_dzn_terrain(filename, buildings=None, verbose=False):
 
     def count_conflicts(tarr, rarr):
         if buildings is None:
-            # heuristique simple : choisir l'orientation avec le plus de routes non-null
             return int(rarr.sum())
         conflicts = 0
         for (bid, tpe, bx, by) in buildings:
             x0 = bx - 1; y0 = by - 1
-            # safe: si types sizeX/sizeY inconnus on risque erreur; on compte hors-map comme conflit fort
             try:
                 sx = sizeX[tpe]; sy = sizeY[tpe]
             except Exception:
-                # si type inconnu, on ignore ce bâtiment dans le test
                 continue
             x_start = max(0, x0); x_end = min(W, x0 + sx)
             y_start = max(0, y0); y_end = min(H, y0 + sy)
@@ -108,9 +89,6 @@ def read_dzn_terrain(filename, buildings=None, verbose=False):
             sub = rarr[y_start:y_end, x_start:x_end]
             conflicts += int(sub.sum())
         return conflicts
-
-    # Si buildings fourni on minimise le nombre de cases route sous les bâtiments;
-    # sinon on choisit orientation A (mais on affiche les deux si verbose)
     ca = count_conflicts(tA, rA)
     cb = count_conflicts(tB, rB)
 
@@ -122,18 +100,12 @@ def read_dzn_terrain(filename, buildings=None, verbose=False):
         if verbose:
             print(f"[read_dzn_terrain] orientation choisie = {label} (conflits A={ca}, B={cb})")
     else:
-        # pas de bâtiments fournis : on conserve A (raison : cohérence avec MiniZinc habituel)
         chosen_t, chosen_r, label = tA, rA, "A"
         if verbose:
             print("[read_dzn_terrain] aucun buildings fourni -> orientation A par défaut")
 
     return W, H, chosen_t, chosen_r
 
-
-# ===============================================================
-# Dimensions réelles des bâtiments (indexées par type)
-# (garde exactement tes listes existantes)
-# ===============================================================
 
 sizeX = [
     14, # 0 Sky_big
@@ -196,9 +168,6 @@ road_color = [0.2, 0.2, 0.2]          # gris foncé
 building_colors = {0: [1,0.4,0.4], 6: [0.8,0.2,1.0]}
 
 
-# ===============================================================
-# 4) Affichage final (mode debug disponible)
-# ===============================================================
 
 def draw_map(buildings, W, H, terrain, isRoad,
              debug=False,
@@ -250,24 +219,24 @@ def draw_map(buildings, W, H, terrain, isRoad,
 
         rect_height = y_end - y_start
 
-        # rectangle blanc pour tous les batiments
+        
         rect = patches.Rectangle((x_start, y_start),
                                  x_end - x_start, rect_height,
                                  linewidth=1.0, edgecolor='white', facecolor='none')
         ax.add_patch(rect)
 
-        # vérif collisions route
+
         if x_start < x_end and y_start < y_end:
             sub = isRoad[y_start:y_end, x_start:x_end]
             if sub.sum() > 0:
                 bad_buildings.append((bid, tpe, bx, by, int(sub.sum())))
-                # rectangle rouge plus épais en cas de conflit
+                
                 rect_conf = patches.Rectangle((x_start, y_start),
                                               x_end - x_start, rect_height,
                                               linewidth=1.5, edgecolor='red', facecolor='none')
                 ax.add_patch(rect_conf)
 
-        # remplissage visuel du bâtiment (couleur unique aléatoire)
+      
         rand_color = (random.random(), random.random(), random.random(), 0.80)
         patch_fill = patches.Rectangle((x_start, y_start),
                                        x_end - x_start, rect_height,
@@ -275,12 +244,10 @@ def draw_map(buildings, W, H, terrain, isRoad,
                                        facecolor=rand_color)
         ax.add_patch(patch_fill)
 
-    # Sauvegarde éventuelle sur disque
     if save_path is not None:
         plt.savefig(save_path, dpi=300, bbox_inches="tight")
         print(f"Image sauvegardée dans {save_path}")
 
-    # Affichage ou fermeture silencieuse
     if show:
         plt.show()
     else:
@@ -288,9 +255,6 @@ def draw_map(buildings, W, H, terrain, isRoad,
 
     return bad_buildings 
 
-# ===============================================================
-# 5) EXECUTION (fichiers codés en dur)
-# ===============================================================
 
 if __name__ == "__main__":
     import argparse
@@ -313,8 +277,6 @@ if __name__ == "__main__":
         buildings=buildings,
         verbose=False
     )
-
-    # debug=True = contours blancs + rouge sur routes
     conflicts = draw_map(
         buildings, W, H, terrain, isRoad,
         debug=True,

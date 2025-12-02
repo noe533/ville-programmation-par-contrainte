@@ -1,9 +1,8 @@
 int: NB_TYPES = 21;
 set of int: TYPES = 0..NB_TYPES-1;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Catégories 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 int: CAT_ROAD     = 0;  
 int: CAT_HOUSE    = 1;
@@ -37,9 +36,9 @@ array[TYPES] of int: category_type =
     3  % 20 Super Market
   ]);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % Tailles rectangulaires 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 array[TYPES] of int: sizeX_type =
   array1d(TYPES, [
@@ -91,9 +90,8 @@ array[TYPES] of int: sizeY_type =
     13  % 20 Super Market
   ]);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Combien d'instances par type ?
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 array[TYPES] of int: nb_par_type =
   array1d(TYPES, [
@@ -101,9 +99,9 @@ array[TYPES] of int: nb_par_type =
     4, % 0  Sky_big
     4, % 1  Sky_small
     4, % 2  House_01
-    3, % 3  House_02
-    3, % 4  Residential
-    3, % 5  House_03
+    4, % 3  House_02
+    4, % 4  Residential
+    4, % 5  House_03
 
     % Énergie
     2, % 6  Factory
@@ -111,23 +109,20 @@ array[TYPES] of int: nb_par_type =
 
     % Commerce
     4, % 8  Auto Service
-    4, % 9  Bakery
-    4, % 10 Bar
-    3, % 11 Books Shop
-    3, % 12 Chicken Shop
-    3, % 13 Clothing
-    3, % 14 Coffee Shop
-    3, % 15 Drug Store
-    3, % 16 Fast Food
-    3, % 17 Fruits Shop
-    3, % 18 Gas Station
-    3, % 19 Gift Shop
-    3  % 20 Super Market
+    1, % 9  Bakery
+    1, % 10 Bar
+    1, % 11 Books Shop
+    1, % 12 Chicken Shop
+    1, % 13 Clothing
+    1, % 14 Coffee Shop
+    1, % 15 Drug Store
+    1, % 16 Fast Food
+    1, % 17 Fruits Shop
+    1, % 18 Gas Station
+    1, % 19 Gift Shop
+    1  % 20 Super Market
   ]);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Bâtiments concrets dérivés des types
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 int: NB_BUILDINGS = sum(t in TYPES)(nb_par_type[t]);
 set of int: BATIMENTS = 1..NB_BUILDINGS;
